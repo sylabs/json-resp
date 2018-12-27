@@ -159,3 +159,29 @@ func TestReadResponse(t *testing.T) {
 		})
 	}
 }
+
+func TestReadResponseNil(t *testing.T) {
+	type TestStruct struct {
+		Value string
+	}
+
+	tests := []struct {
+		name      string
+		r         io.Reader
+		wantErr   bool
+		wantValue string
+	}{
+		{"Empty", bytes.NewReader(nil), true, ""},
+		{"Nil", getResponseBody(nil), false, "blah"},
+		{"Response", getResponseBody(TestStruct{"blah"}), false, "blah"},
+		{"Error", getErrorBody("blah", http.StatusNotFound), true, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ReadResponse(tt.r, nil)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadResponse() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
