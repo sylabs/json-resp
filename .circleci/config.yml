@@ -1,0 +1,135 @@
+version: 2
+
+defaults: &defaults
+  working_directory: /go/src/github.com/sylabs/json-resp
+  docker:
+    - image: golang:latest
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Dep Check
+          command: |-
+            curl -s https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep check
+      - run:
+          name: Build Source
+          command: go build ./...
+      - run:
+          name: Check Formatting
+          command: test -z $(go fmt ./...)
+      - run:
+          name: Vet Source
+          command: go vet -all ./...
+      - run:
+          name: Check for Lint
+          command: |
+            go get -u golang.org/x/lint/golint
+            golint -set_exit_status `go list ./...`
+      - run:
+          name: Run Tests
+          command: go test -cover -race -timeout 60s ./...
+
+  get_source:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Install Dep
+          command: curl -s https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+      - restore_cache:
+          key: dep-cache-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+      - run:
+          name: Set Up Vendor Directory
+          command: |-
+            if [ ! -d vendor ]; then
+              dep ensure -vendor-only
+            fi
+      - save_cache:
+          key: dep-cache-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+      - run:
+          name: Dep Check
+          command: dep check
+      - persist_to_workspace:
+          root: /
+          paths:
+            - go/src/github.com/sylabs/json-resp/*
+
+  build_source:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Build Source
+          command: go build ./...
+
+  check_formatting:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Check Formatting
+          command: test -z $(go fmt ./...)
+
+  vet_source:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Vet Source
+          command: go vet -all ./...
+
+  lint_source:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Check for Lint
+          command: |
+            go get -u golang.org/x/lint/golint
+            golint -set_exit_status `go list ./...`
+
+  unit_test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Run Tests
+          command: go test -cover -race -timeout 60s ./...
+      - store_artifacts:
+          path: cover.out
+          destination: cover.out
+
+workflows:
+  version: 2
+
+  build_and_test:
+    jobs:
+      - get_source
+      - build_source:
+          requires:
+            - get_source
+      - check_formatting:
+          requires:
+            - get_source
+      - vet_source:
+          requires:
+            - get_source
+      - lint_source:
+          requires:
+            - get_source
+      - unit_test:
+          requires:
+            - get_source
