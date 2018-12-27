@@ -82,8 +82,10 @@ func ReadResponse(r io.Reader, v interface{}) error {
 	if u.Error != nil {
 		return u.Error
 	}
-	if err := json.Unmarshal(u.Data, v); err != nil {
-		return fmt.Errorf("jsonresp: failed to unmarshal response: %v", err)
+	if v != nil {
+		if err := json.Unmarshal(u.Data, v); err != nil {
+			return fmt.Errorf("jsonresp: failed to unmarshal response: %v", err)
+		}
 	}
 	return nil
 }
