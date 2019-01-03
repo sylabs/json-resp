@@ -11,11 +11,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Dep Check
-          command: |-
-            curl -s https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep check
-      - run:
           name: Build Source
           command: go build ./...
       - run:
@@ -37,26 +32,6 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run:
-          name: Install Dep
-          command: curl -s https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - restore_cache:
-          key: dep-cache-{{ checksum "Gopkg.lock" }}
-          paths:
-            - vendor
-      - run:
-          name: Set Up Vendor Directory
-          command: |-
-            if [ ! -d vendor ]; then
-              dep ensure -vendor-only
-            fi
-      - save_cache:
-          key: dep-cache-{{ checksum "Gopkg.lock" }}
-          paths:
-            - vendor
-      - run:
-          name: Dep Check
-          command: dep check
       - persist_to_workspace:
           root: /
           paths:

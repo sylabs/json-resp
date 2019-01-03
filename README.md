@@ -7,23 +7,13 @@ The `json-resp` package contains a small set of functions that are used to marsh
 
 ## Quick Start
 
-Install [dep](https://golang.github.io/dep/docs/installation.html) and the [CircleCI Local CLI](https://circleci.com/docs/2.0/local-cli/). See the [Dependency Management](#dependency-management) and [Continuous Integration](#continuous-integration) sections below for more detail.
-
-Use dep to populate the `vendor/` directory:
-
-```sh
-dep ensure
-```
+Install the [CircleCI Local CLI](https://circleci.com/docs/2.0/local-cli/). See the [Continuous Integration](#continuous-integration) section below for more detail.
 
 To build and test:
 
 ```sh
 circleci build
 ```
-
-## Dependency Management
-
-This package uses [dep](https://golang.github.io/dep/) for dependency management. Install it by following the directions for your platform [here](https://golang.github.io/dep/docs/installation.html).
 
 ## Continuous Integration
 
