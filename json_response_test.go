@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
@@ -99,6 +100,10 @@ func TestWriteResponsePage(t *testing.T) {
 		{"PagePrev", TestStruct{"blah"}, &PageDetails{Prev: "p"}, http.StatusOK, "blah", &PageDetails{Prev: "p"}, http.StatusOK},
 		{"PageNext", TestStruct{"blah"}, &PageDetails{Next: "n"}, http.StatusOK, "blah", &PageDetails{Next: "n"}, http.StatusOK},
 		{"PagePrevNext", TestStruct{"blah"}, &PageDetails{Prev: "p", Next: "n"}, http.StatusOK, "blah", &PageDetails{Prev: "p", Next: "n"}, http.StatusOK},
+		{"PageSize", TestStruct{"blah"}, &PageDetails{TotalSize: 42}, http.StatusOK, "blah", &PageDetails{TotalSize: 42}, http.StatusOK},
+		{"PagePrevSize", TestStruct{"blah"}, &PageDetails{Prev: "p", TotalSize: 42}, http.StatusOK, "blah", &PageDetails{Prev: "p", TotalSize: 42}, http.StatusOK},
+		{"PageNextSize", TestStruct{"blah"}, &PageDetails{Next: "n", TotalSize: 42}, http.StatusOK, "blah", &PageDetails{Next: "n", TotalSize: 42}, http.StatusOK},
+		{"PagePrevNextSize", TestStruct{"blah"}, &PageDetails{Prev: "p", Next: "n", TotalSize: 42}, http.StatusOK, "blah", &PageDetails{Prev: "p", Next: "n", TotalSize: 42}, http.StatusOK},
 		{"Created", TestStruct{"blah"}, nil, http.StatusCreated, "blah", nil, http.StatusCreated},
 	}
 	for _, tt := range tests {
@@ -118,11 +123,8 @@ func TestWriteResponsePage(t *testing.T) {
 			if got, want := (pd == nil), (tt.wantPD == nil); got != want {
 				t.Errorf("got nil page %v, want %v", got, want)
 			} else if pd != nil {
-				if got, want := pd.Prev, tt.wantPD.Prev; got != want {
-					t.Errorf("got prev %v, want %v", got, want)
-				}
-				if got, want := pd.Next, tt.wantPD.Next; got != want {
-					t.Errorf("got next %v, want %v", got, want)
+				if got, want := pd, tt.wantPD; !reflect.DeepEqual(got, want) {
+					t.Errorf("got page details %+v, want %+v", got, want)
 				}
 			}
 			if rr.Code != tt.wantCode {
@@ -199,9 +201,12 @@ func TestReadResponsePage(t *testing.T) {
 		{"Empty", bytes.NewReader(nil), true, "", nil},
 		{"Response", getResponseBody(TestStruct{"blah"}), false, "blah", nil},
 		{"ResponsePageNone", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{}), false, "blah", &PageDetails{}},
-		{"ResponsePagePrev", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{"prev", ""}), false, "blah", &PageDetails{Prev: "prev"}},
-		{"ResponsePageNext", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{"", "next"}), false, "blah", &PageDetails{Next: "next"}},
-		{"ResponsePagePrevNext", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{"prev", "next"}), false, "blah", &PageDetails{Prev: "prev", Next: "next"}},
+		{"ResponsePagePrev", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Prev: "prev"}), false, "blah", &PageDetails{Prev: "prev"}},
+		{"ResponsePageNext", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Next: "next"}), false, "blah", &PageDetails{Next: "next"}},
+		{"ResponsePagePrevNext", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Prev: "prev", Next: "next"}), false, "blah", &PageDetails{Prev: "prev", Next: "next"}},
+		{"ResponsePagePrevSize", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Prev: "prev", TotalSize: 42}), false, "blah", &PageDetails{Prev: "prev", TotalSize: 42}},
+		{"ResponsePageNextSize", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Next: "next", TotalSize: 42}), false, "blah", &PageDetails{Next: "next", TotalSize: 42}},
+		{"ResponsePagePrevNextSize", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Prev: "prev", Next: "next", TotalSize: 42}), false, "blah", &PageDetails{Prev: "prev", Next: "next", TotalSize: 42}},
 		{"Error", getErrorBody("blah", http.StatusNotFound), true, "", nil},
 	}
 	for _, tt := range tests {
@@ -220,11 +225,8 @@ func TestReadResponsePage(t *testing.T) {
 				if got, want := (pd == nil), (tt.wantPD == nil); got != want {
 					t.Errorf("got nil page %v, want %v", got, want)
 				} else if pd != nil {
-					if got, want := pd.Prev, tt.wantPD.Prev; got != want {
-						t.Errorf("got prev %v, want %v", got, want)
-					}
-					if got, want := pd.Next, tt.wantPD.Next; got != want {
-						t.Errorf("got next %v, want %v", got, want)
+					if got, want := pd, tt.wantPD; !reflect.DeepEqual(got, want) {
+						t.Errorf("got page details %+v, want %+v", got, want)
 					}
 				}
 			}

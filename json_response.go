@@ -21,8 +21,9 @@ func (e *Error) Error() string {
 
 // PageDetails specifies paging information.
 type PageDetails struct {
-	Prev string `json:"prev,omitempty"`
-	Next string `json:"next,omitempty"`
+	Prev      string `json:"prev,omitempty"`
+	Next      string `json:"next,omitempty"`
+	TotalSize int    `json:"totalSize,omitempty"`
 }
 
 // Error describes an error condition.
