@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -57,7 +58,9 @@ func TestWriteError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rr := httptest.NewRecorder()
 
-			WriteError(rr, tt.error, tt.code)
+			if err := WriteError(rr, tt.error, tt.code); err != nil {
+				t.Fatalf("failed to write error: %v", err)
+			}
 
 			if rr.Code != tt.wantCode {
 				t.Errorf("got code %v, want %v", rr.Code, tt.wantCode)
@@ -110,7 +113,9 @@ func TestWriteResponsePage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rr := httptest.NewRecorder()
 
-			WriteResponsePage(rr, tt.data, tt.pd, tt.code)
+			if err := WriteResponsePage(rr, tt.data, tt.pd, tt.code); err != nil {
+				t.Fatalf("failed to write response: %v", err)
+			}
 
 			var ts TestStruct
 			pd, err := ReadResponsePage(rr.Body, &ts)
@@ -154,7 +159,9 @@ func TestWriteResponse(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			rr := httptest.NewRecorder()
 
-			WriteResponse(rr, tt.data, tt.code)
+			if err := WriteResponse(rr, tt.data, tt.code); err != nil {
+				t.Fatalf("failed to write response: %v", err)
+			}
 
 			var ts TestStruct
 			if err := ReadResponse(rr.Body, &ts); err != nil {
@@ -172,7 +179,9 @@ func TestWriteResponse(t *testing.T) {
 
 func getResponseBodyPage(v interface{}, p *PageDetails) io.Reader {
 	rr := httptest.NewRecorder()
-	WriteResponsePage(rr, v, p, http.StatusOK)
+	if err := WriteResponsePage(rr, v, p, http.StatusOK); err != nil {
+		log.Fatalf("failed to write response: %v", err)
+	}
 	return rr.Body
 }
 
@@ -182,7 +191,9 @@ func getResponseBody(v interface{}) io.Reader {
 
 func getErrorBody(error string, code int) io.Reader {
 	rr := httptest.NewRecorder()
-	WriteError(rr, error, code)
+	if err := WriteError(rr, error, code); err != nil {
+		log.Fatalf("failed to write error: %v", err)
+	}
 	return rr.Body
 }
 
