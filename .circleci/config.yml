@@ -3,7 +3,7 @@ version: 2
 defaults: &defaults
   working_directory: /go/src/github.com/sylabs/json-resp
   docker:
-    - image: golang:latest
+    - image: golang:1.12
 
 jobs:
   build:
