@@ -1,7 +1,8 @@
 # JSON Response
 
-<a href="https://circleci.com/gh/sylabs/workflows/json-resp"><img src="https://circleci.com/gh/sylabs/json-resp.svg?style=shield&circle-token=48bc85b347052f2de57405ab063b0d8b96c7059d"></a>
-<a href="https://app.zenhub.com/workspace/o/sylabs/json-resp/boards"><img src="https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png"></a>
+[![GoDoc](https://godoc.org/github.com/sylabs/json-resp?status.svg)](https://godoc.org/github.com/sylabs/json-resp)
+[![Build Status](https://circleci.com/gh/sylabs/json-resp.svg?style=shield)](https://circleci.com/gh/sylabs/workflows/json-resp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sylabs/json-resp)](https://goreportcard.com/report/github.com/sylabs/json-resp)
 
 The `json-resp` package contains a small set of functions that are used to marshall and unmarshall response data and errors in JSON format.
 
