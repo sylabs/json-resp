@@ -110,3 +110,18 @@ func ReadResponse(r io.Reader, v interface{}) error {
 	_, err := ReadResponsePage(r, v)
 	return err
 }
+
+// ReadError attempts to unmarshal JSON-encoded error details from the supplied reader. It returns
+// nil if an error could not be parsed from the response, or if the parsed error was nil.
+func ReadError(r io.Reader) error {
+	var u struct {
+		Error *Error `json:"error"`
+	}
+	if err := json.NewDecoder(r).Decode(&u); err != nil {
+		return nil
+	}
+	if u.Error == nil {
+		return nil
+	}
+	return u.Error
+}

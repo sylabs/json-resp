@@ -284,21 +284,59 @@ func TestReadResponseNil(t *testing.T) {
 	}
 
 	tests := []struct {
-		name      string
-		r         io.Reader
-		wantErr   bool
-		wantValue string
+		name    string
+		r       io.Reader
+		wantErr bool
 	}{
-		{"Empty", bytes.NewReader(nil), true, ""},
-		{"Nil", getResponseBody(nil), false, "blah"},
-		{"Response", getResponseBody(TestStruct{"blah"}), false, "blah"},
-		{"Error", getErrorBody("blah", http.StatusNotFound), true, ""},
+		{"Empty", bytes.NewReader(nil), true},
+		{"Nil", getResponseBody(nil), false},
+		{"Response", getResponseBody(TestStruct{"blah"}), false},
+		{"Error", getErrorBody("blah", http.StatusNotFound), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := ReadResponse(tt.r, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadResponse() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestReadError(t *testing.T) {
+	type TestStruct struct {
+		Value string
+	}
+
+	tests := []struct {
+		name        string
+		r           io.Reader
+		wantErr     bool
+		wantMessage string
+		wantCode    int
+	}{
+		{"Empty", bytes.NewReader(nil), false, "", 0},
+		{"Response", getResponseBody(TestStruct{"blah"}), false, "", 0},
+		{"Error", getErrorBody("blah", http.StatusNotFound), true, "blah", http.StatusNotFound},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ReadError(tt.r)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadError() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if err != nil {
+				err, ok := err.(*Error)
+				if !ok {
+					t.Fatal("invalid error type")
+				}
+				if got, want := err.Message, tt.wantMessage; got != want {
+					t.Errorf("got message %v, want %v", got, want)
+				}
+				if got, want := err.Code, tt.wantCode; got != want {
+					t.Errorf("got code %v, want %v", got, want)
+				}
 			}
 		})
 	}
