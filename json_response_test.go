@@ -341,3 +341,48 @@ func TestReadError(t *testing.T) {
 		})
 	}
 }
+
+func TestSafeWriteResponse(t *testing.T) {
+
+	type SampleData struct {
+		SampleField string `json:"data"`
+		Value       int    `json:"value"`
+	}
+
+	sampleData := SampleData{SampleField: "hello", Value: 123}
+
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		_ = SafeWriteResponse(w, sampleData)
+	}
+
+	// for this test, the URI, HTTP method (and payload, where applicable) is inconsequential.
+	// the test should validate the response only
+	r := httptest.NewRequest("GET", "http://example.com/endpoint", nil)
+	w := httptest.NewRecorder()
+	handler(w, r)
+
+	resp := w.Result()
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("HTTP status was incorrect, got: %d, expected %d", resp.StatusCode, http.StatusOK)
+	}
+
+	const expectedHeaderValue = "application/json"
+
+	if resp.Header.Get("Content-Type") != expectedHeaderValue {
+		t.Errorf("HTTP header Content-Type was incorrect, got: %s, expected %s", resp.Header.Get("Content-Type"), expectedHeaderValue)
+	}
+
+	// if jsonresp.ReadResponse() fails, it is an indication that jsonutil.SafeJSONWriteResponse
+	// has failed to write properly formatted response data
+	var result SampleData
+	err := ReadResponse(resp.Body, &result)
+	if err != nil {
+		t.Errorf("Error reading JSON response: %v", err)
+	}
+
+	if result.SampleField != sampleData.SampleField || result.Value != sampleData.Value {
+		t.Errorf("JSON unmarshaling error, got: %v, expected: %v", result, sampleData)
+	}
+}

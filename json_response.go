@@ -113,6 +113,17 @@ func WriteResponse(w http.ResponseWriter, data interface{}, code int) error {
 	return WriteResponsePage(w, data, nil, code)
 }
 
+// SafeWriteResponse is wrapper around jsonresp.WriteResponse() that will
+// write a HTTP status 500 error with the error message if the JSON encode
+// fails.
+func SafeWriteResponse(w http.ResponseWriter, payload interface{}) *Error {
+	err := WriteResponse(w, payload, http.StatusOK)
+	if err != nil {
+		return NewError(http.StatusInternalServerError, err.Error())
+	}
+	return nil
+}
+
 // ReadResponse reads a JSON response, and unmarshals the supplied data.
 func ReadResponse(r io.Reader, v interface{}) error {
 	_, err := ReadResponsePage(r, v)
