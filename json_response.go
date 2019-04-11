@@ -125,3 +125,17 @@ func ReadError(r io.Reader) error {
 	}
 	return u.Error
 }
+
+// ParseErrorBody - Parse an API format error out of the body. This function is useful when
+// http status code is not the expected result and the body _may_ contain useful error
+// information.
+func ParseErrorBody(r io.Reader) (*Error, error) {
+	var u struct {
+		Error *Error `json:"error"`
+	}
+	err := json.NewDecoder(r).Decode(&u)
+	if err != nil {
+		return nil, fmt.Errorf("jsonresp: server returned response that could not be decoded: %v", err)
+	}
+	return u.Error, nil
+}
