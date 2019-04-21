@@ -4,4 +4,3 @@ linters:
     - gochecknoglobals
     - lll
     - scopelint
-    - unparam

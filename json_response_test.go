@@ -189,9 +189,9 @@ func getResponseBody(v interface{}) io.Reader {
 	return getResponseBodyPage(v, nil)
 }
 
-func getErrorBody(error string, code int) io.Reader {
+func getErrorBody() io.Reader {
 	rr := httptest.NewRecorder()
-	if err := WriteError(rr, error, code); err != nil {
+	if err := WriteError(rr, "blah", http.StatusNotFound); err != nil {
 		log.Fatalf("failed to write error: %v", err)
 	}
 	return rr.Body
@@ -218,7 +218,7 @@ func TestReadResponsePage(t *testing.T) {
 		{"ResponsePagePrevSize", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Prev: "prev", TotalSize: 42}), false, "blah", &PageDetails{Prev: "prev", TotalSize: 42}},
 		{"ResponsePageNextSize", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Next: "next", TotalSize: 42}), false, "blah", &PageDetails{Next: "next", TotalSize: 42}},
 		{"ResponsePagePrevNextSize", getResponseBodyPage(TestStruct{"blah"}, &PageDetails{Prev: "prev", Next: "next", TotalSize: 42}), false, "blah", &PageDetails{Prev: "prev", Next: "next", TotalSize: 42}},
-		{"Error", getErrorBody("blah", http.StatusNotFound), true, "", nil},
+		{"Error", getErrorBody(), true, "", nil},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -258,7 +258,7 @@ func TestReadResponse(t *testing.T) {
 	}{
 		{"Empty", bytes.NewReader(nil), true, ""},
 		{"Response", getResponseBody(TestStruct{"blah"}), false, "blah"},
-		{"Error", getErrorBody("blah", http.StatusNotFound), true, ""},
+		{"Error", getErrorBody(), true, ""},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -291,7 +291,7 @@ func TestReadResponseNil(t *testing.T) {
 		{"Empty", bytes.NewReader(nil), true},
 		{"Nil", getResponseBody(nil), false},
 		{"Response", getResponseBody(TestStruct{"blah"}), false},
-		{"Error", getErrorBody("blah", http.StatusNotFound), true},
+		{"Error", getErrorBody(), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -317,7 +317,7 @@ func TestReadError(t *testing.T) {
 	}{
 		{"Empty", bytes.NewReader(nil), false, "", 0},
 		{"Response", getResponseBody(TestStruct{"blah"}), false, "", 0},
-		{"Error", getErrorBody("blah", http.StatusNotFound), true, "blah", http.StatusNotFound},
+		{"Error", getErrorBody(), true, "blah", http.StatusNotFound},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -351,9 +351,9 @@ func TestSafeWriteResponse(t *testing.T) {
 
 	sampleData := SampleData{SampleField: "hello", Value: 123}
 
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_ = SafeWriteResponse(w, sampleData)
-	}
+	})
 
 	// for this test, the URI, HTTP method (and payload, where applicable) is inconsequential.
 	// the test should validate the response only
