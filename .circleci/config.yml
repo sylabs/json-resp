@@ -41,24 +41,6 @@ jobs:
           name: Build Source
           command: go build ./...
 
-  check_formatting:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: /
-      - run:
-          name: Check Formatting
-          command: test -z $(go fmt ./...)
-
-  vet_source:
-    <<: *defaults
-    steps:
-      - attach_workspace:
-          at: /
-      - run:
-          name: Vet Source
-          command: go vet -all ./...
-
   lint_source:
     <<: *defaults
     steps:
@@ -102,12 +84,6 @@ workflows:
     jobs:
       - get_source
       - build_source:
-          requires:
-            - get_source
-      - check_formatting:
-          requires:
-            - get_source
-      - vet_source:
           requires:
             - get_source
       - lint_source:

@@ -1,0 +1,8 @@
+linters:
+  enable-all: true
+  disable:
+    - gochecknoglobals
+    - lll
+    - misspell
+    - scopelint
+    - unparam
