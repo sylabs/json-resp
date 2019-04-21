@@ -3,6 +3,5 @@ linters:
   disable:
     - gochecknoglobals
     - lll
-    - misspell
     - scopelint
     - unparam
