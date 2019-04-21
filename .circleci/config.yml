@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.4
 
 defaults: &defaults
   working_directory: /src
@@ -6,28 +9,6 @@ defaults: &defaults
     - image: golang:1.12
 
 jobs:
-  build:
-    <<: *defaults
-    steps:
-      - checkout
-      - run:
-          name: Build Source
-          command: go build ./...
-      - run:
-          name: Check Formatting
-          command: test -z $(go fmt ./...)
-      - run:
-          name: Vet Source
-          command: go vet -all ./...
-      - run:
-          name: Check for Lint
-          command: |
-            curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin v1.15.0
-            golangci-lint run ./...
-      - run:
-          name: Run Tests
-          command: go test -cover -race -timeout 60s ./...
-
   get_source:
     <<: *defaults
     steps:
@@ -110,7 +91,9 @@ jobs:
           at: /
       - run:
           name: Run Tests
-          command: go test -cover -race -timeout 60s ./...
+          command: go test -coverprofile cover.out -race -timeout 60s ./...
+      - codecov/upload:
+          file: cover.out
 
 workflows:
   version: 2
