@@ -33,7 +33,7 @@ type Error struct {
 }
 
 var (
-	// JSONErrorUnauthorized is a generic 401 unauthorized reponse
+	// JSONErrorUnauthorized is a generic 401 unauthorized response
 	JSONErrorUnauthorized = &Error{
 		Code:    http.StatusUnauthorized,
 		Message: "Unauthorized",
