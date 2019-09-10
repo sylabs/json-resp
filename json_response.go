@@ -55,36 +55,48 @@ func NewError(code int, message string) *Error {
 	}
 }
 
-// WriteError encodes the supplied error in a response, and writes to w.
-func WriteError(w http.ResponseWriter, error string, code int) error {
+func encodeResponse(w http.ResponseWriter, jr Response, code int) error {
+
+	// We _could_ encode the JSON directly to the response, but in so doing, the response code is
+	// written out the first time Write() is called under the hood. This makes it difficult to
+	// return an appropriate HTTP code when JSON encoding fails, so we use an intermediate buffer
+	// in order to preserve our ability to set the correct HTTP code.
+	b, err := json.Marshal(jr)
+	if err != nil {
+		return fmt.Errorf("jsonresp: failed to encode response: %v", err)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
+	if _, err := w.Write(b); err != nil {
+		return fmt.Errorf("jsonresp: failed to write response: %v", err)
+	}
+	return nil
+}
 
+// WriteError encodes the supplied error in a response, and writes to w.
+func WriteError(w http.ResponseWriter, error string, code int) error {
 	jr := Response{
 		Error: &Error{
 			Code:    code,
 			Message: error,
 		},
 	}
-	if err := json.NewEncoder(w).Encode(jr); err != nil {
-		return fmt.Errorf("jsonresp: failed to write error: %v", err)
-	}
-	return nil
+	return encodeResponse(w, jr, code)
 }
 
 // WriteResponsePage encodes the supplied data in a paged JSON response, and writes to w.
 func WriteResponsePage(w http.ResponseWriter, data interface{}, pd *PageDetails, code int) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-
 	jr := Response{
 		Data: data,
 		Page: pd,
 	}
-	if err := json.NewEncoder(w).Encode(jr); err != nil {
-		return fmt.Errorf("jsonresp: failed to write response: %v", err)
-	}
-	return nil
+	return encodeResponse(w, jr, code)
+}
+
+// WriteResponse encodes the supplied data in a response, and writes to w.
+func WriteResponse(w http.ResponseWriter, data interface{}, code int) error {
+	return WriteResponsePage(w, data, nil, code)
 }
 
 // ReadResponsePage reads a paged JSON response, and unmarshals the supplied data.
@@ -106,22 +118,6 @@ func ReadResponsePage(r io.Reader, v interface{}) (pd *PageDetails, err error) {
 		}
 	}
 	return u.Page, nil
-}
-
-// WriteResponse encodes the supplied data in a response, and writes to w.
-func WriteResponse(w http.ResponseWriter, data interface{}, code int) error {
-	return WriteResponsePage(w, data, nil, code)
-}
-
-// SafeWriteResponse is wrapper around jsonresp.WriteResponse() that will
-// write a HTTP status 500 error with the error message if the JSON encode
-// fails.
-func SafeWriteResponse(w http.ResponseWriter, payload interface{}) *Error {
-	err := WriteResponse(w, payload, http.StatusOK)
-	if err != nil {
-		return NewError(http.StatusInternalServerError, err.Error())
-	}
-	return nil
 }
 
 // ReadResponse reads a JSON response, and unmarshals the supplied data.
