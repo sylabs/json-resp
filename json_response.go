@@ -32,14 +32,6 @@ type Error struct {
 	Message string `json:"message,omitempty"`
 }
 
-var (
-	// JSONErrorUnauthorized is a generic 401 unauthorized response
-	JSONErrorUnauthorized = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Unauthorized",
-	}
-)
-
 // Response is the top level container of all of our REST API responses.
 type Response struct {
 	Data  interface{}  `json:"data,omitempty"`
