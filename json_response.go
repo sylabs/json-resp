@@ -74,14 +74,20 @@ func WriteError(w http.ResponseWriter, error string, code int) error {
 
 // WriteResponsePage encodes the supplied data in a paged JSON response, and writes to w.
 func WriteResponsePage(w http.ResponseWriter, data interface{}, pd *PageDetails, code int) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-
 	jr := Response{
 		Data: data,
 		Page: pd,
 	}
-	if err := json.NewEncoder(w).Encode(jr); err != nil {
+
+	buf, err := json.Marshal(jr)
+	if err != nil {
+		return fmt.Errorf("jsonresp: failed to marshal response: %v", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+
+	if _, err := w.Write(buf); err != nil {
 		return fmt.Errorf("jsonresp: failed to write response: %v", err)
 	}
 	return nil
