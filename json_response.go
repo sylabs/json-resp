@@ -85,18 +85,19 @@ func encodeResponse(w http.ResponseWriter, jr Response, code int) error {
 	return nil
 }
 
-// WriteError encodes the supplied error in a response, and writes to w.
-func WriteError(w http.ResponseWriter, error string, code int) error {
+// WriteError writes a status code and JSON response containing the supplied error message and
+// status code to w.
+func WriteError(w http.ResponseWriter, message string, code int) error {
 	jr := Response{
 		Error: &Error{
 			Code:    code,
-			Message: error,
+			Message: message,
 		},
 	}
 	return encodeResponse(w, jr, code)
 }
 
-// WriteResponsePage encodes the supplied data in a paged JSON response, and writes to w.
+// WriteResponsePage writes a status code and JSON response containing data and pd to w.
 func WriteResponsePage(w http.ResponseWriter, data interface{}, pd *PageDetails, code int) error {
 	jr := Response{
 		Data: data,
@@ -105,7 +106,7 @@ func WriteResponsePage(w http.ResponseWriter, data interface{}, pd *PageDetails,
 	return encodeResponse(w, jr, code)
 }
 
-// WriteResponse encodes the supplied data in a response, and writes to w.
+// WriteResponse writes a status code and JSON response containing data to w.
 func WriteResponse(w http.ResponseWriter, data interface{}, code int) error {
 	return WriteResponsePage(w, data, nil, code)
 }
