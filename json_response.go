@@ -12,6 +12,12 @@ import (
 	"net/http"
 )
 
+// Error describes an error condition.
+type Error struct {
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
 func (e *Error) Error() string {
 	if e.Message != "" {
 		return fmt.Sprintf("%v (%v %v)", e.Message, e.Code, http.StatusText(e.Code))
@@ -19,17 +25,22 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%v %v", e.Code, http.StatusText(e.Code))
 }
 
+// Is compares e against target. If target is an Error and matches the non-zero fields of e, true
+// is returned.
+func (e *Error) Is(target error) bool {
+	t, ok := target.(*Error)
+	if !ok {
+		return false
+	}
+	return ((e.Code == t.Code) || t.Code == 0) &&
+		((e.Message == t.Message) || t.Message == "")
+}
+
 // PageDetails specifies paging information.
 type PageDetails struct {
 	Prev      string `json:"prev,omitempty"`
 	Next      string `json:"next,omitempty"`
 	TotalSize int    `json:"totalSize,omitempty"`
-}
-
-// Error describes an error condition.
-type Error struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
 }
 
 var (

@@ -8,6 +8,7 @@ package jsonresp
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -21,10 +22,21 @@ func TestError(t *testing.T) {
 		name          string
 		code          int
 		message       string
+		wantErr       error
 		wantErrString string
 	}{
-		{"NoMessage", http.StatusNotFound, "", "404 Not Found"},
-		{"Message", http.StatusNotFound, "blah", "blah (404 Not Found)"},
+		{
+			name:          "NoMessage",
+			code:          http.StatusNotFound,
+			wantErr:       &Error{Code: http.StatusNotFound},
+			wantErrString: "404 Not Found",
+		},
+		{
+			name:          "Message",
+			code:          http.StatusNotFound,
+			message:       "blah",
+			wantErr:       &Error{Code: http.StatusNotFound, Message: "blah"},
+			wantErrString: "blah (404 Not Found)"},
 	}
 
 	for _, tt := range tests {
@@ -36,6 +48,9 @@ func TestError(t *testing.T) {
 			if je.Message != tt.message {
 				t.Errorf("got message %v, want %v", je.Message, tt.message)
 			}
+			if !errors.Is(je, tt.wantErr) {
+				t.Errorf("got error %v, want %v", je, tt.wantErr)
+			}
 			if s := je.Error(); s != tt.wantErrString {
 				t.Errorf("got string %v, want %v", s, tt.wantErrString)
 			}
@@ -45,14 +60,13 @@ func TestError(t *testing.T) {
 
 func TestWriteError(t *testing.T) {
 	tests := []struct {
-		name        string
-		error       string
-		code        int
-		wantMessage string
-		wantCode    int
+		name    string
+		error   string
+		code    int
+		wantErr error
 	}{
-		{"NoMessage", "", http.StatusNotFound, "", http.StatusNotFound},
-		{"NoMessage", "blah", http.StatusNotFound, "blah", http.StatusNotFound},
+		{"NoMessage", "", http.StatusNotFound, &Error{Code: http.StatusNotFound}},
+		{"NoMessage", "blah", http.StatusNotFound, &Error{Code: http.StatusNotFound, Message: "blah"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -62,22 +76,16 @@ func TestWriteError(t *testing.T) {
 				t.Fatalf("failed to write error: %v", err)
 			}
 
-			if rr.Code != tt.wantCode {
-				t.Errorf("got code %v, want %v", rr.Code, tt.wantCode)
+			if rr.Code != tt.code {
+				t.Errorf("got code %v, want %v", rr.Code, tt.code)
 			}
 
 			var jr Response
 			if err := json.NewDecoder(rr.Body).Decode(&jr); err != nil {
 				t.Fatalf("failed to decode response: %v", err)
 			}
-			if jr.Error == nil {
-				t.Fatalf("nil error received")
-			}
-			if jr.Error.Message != tt.wantMessage {
-				t.Errorf("got message %v, want %v", jr.Error.Message, tt.wantMessage)
-			}
-			if jr.Error.Code != tt.wantCode {
-				t.Errorf("got code %v, want %v", jr.Error.Code, tt.wantCode)
+			if got, want := jr.Error, tt.wantErr; !errors.Is(got, want) {
+				t.Errorf("got error %v, want %v", got, want)
 			}
 		})
 	}
@@ -309,34 +317,18 @@ func TestReadError(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		r           io.Reader
-		wantErr     bool
-		wantMessage string
-		wantCode    int
+		name    string
+		r       io.Reader
+		wantErr error
 	}{
-		{"Empty", bytes.NewReader(nil), false, "", 0},
-		{"Response", getResponseBody(TestStruct{"blah"}), false, "", 0},
-		{"Error", getErrorBody(), true, "blah", http.StatusNotFound},
+		{"Empty", bytes.NewReader(nil), nil},
+		{"Response", getResponseBody(TestStruct{"blah"}), nil},
+		{"Error", getErrorBody(), &Error{Code: http.StatusNotFound, Message: "blah"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ReadError(tt.r)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadError() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			if err != nil {
-				err, ok := err.(*Error)
-				if !ok {
-					t.Fatal("invalid error type")
-				}
-				if got, want := err.Message, tt.wantMessage; got != want {
-					t.Errorf("got message %v, want %v", got, want)
-				}
-				if got, want := err.Code, tt.wantCode; got != want {
-					t.Errorf("got code %v, want %v", got, want)
-				}
+			if got, want := ReadError(tt.r), tt.wantErr; !errors.Is(got, want) {
+				t.Errorf("got error %v, want %v", got, want)
 			}
 		})
 	}
