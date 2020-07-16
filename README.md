@@ -1,6 +1,6 @@
 # JSON Response
 
-[![GoDoc](https://godoc.org/github.com/sylabs/json-resp?status.svg)](https://godoc.org/github.com/sylabs/json-resp)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/sylabs/json-resp)](https://pkg.go.dev/github.com/sylabs/json-resp)
 [![Build Status](https://circleci.com/gh/sylabs/json-resp.svg?style=shield)](https://circleci.com/gh/sylabs/workflows/json-resp)
 [![Code Coverage](https://codecov.io/gh/sylabs/json-resp/branch/master/graph/badge.svg)](https://codecov.io/gh/sylabs/json-resp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sylabs/json-resp)](https://goreportcard.com/report/github.com/sylabs/json-resp)
