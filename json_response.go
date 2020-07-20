@@ -12,6 +12,12 @@ import (
 	"net/http"
 )
 
+// Error describes an error condition.
+type Error struct {
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
+}
+
 func (e *Error) Error() string {
 	if e.Message != "" {
 		return fmt.Sprintf("%v (%v %v)", e.Message, e.Code, http.StatusText(e.Code))
@@ -19,17 +25,22 @@ func (e *Error) Error() string {
 	return fmt.Sprintf("%v %v", e.Code, http.StatusText(e.Code))
 }
 
+// Is compares e against target. If target is an Error and matches the non-zero fields of e, true
+// is returned.
+func (e *Error) Is(target error) bool {
+	t, ok := target.(*Error)
+	if !ok {
+		return false
+	}
+	return ((e.Code == t.Code) || t.Code == 0) &&
+		((e.Message == t.Message) || t.Message == "")
+}
+
 // PageDetails specifies paging information.
 type PageDetails struct {
 	Prev      string `json:"prev,omitempty"`
 	Next      string `json:"next,omitempty"`
 	TotalSize int    `json:"totalSize,omitempty"`
-}
-
-// Error describes an error condition.
-type Error struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
 }
 
 var (
@@ -74,18 +85,19 @@ func encodeResponse(w http.ResponseWriter, jr Response, code int) error {
 	return nil
 }
 
-// WriteError encodes the supplied error in a response, and writes to w.
-func WriteError(w http.ResponseWriter, error string, code int) error {
+// WriteError writes a status code and JSON response containing the supplied error message and
+// status code to w.
+func WriteError(w http.ResponseWriter, message string, code int) error {
 	jr := Response{
 		Error: &Error{
 			Code:    code,
-			Message: error,
+			Message: message,
 		},
 	}
 	return encodeResponse(w, jr, code)
 }
 
-// WriteResponsePage encodes the supplied data in a paged JSON response, and writes to w.
+// WriteResponsePage writes a status code and JSON response containing data and pd to w.
 func WriteResponsePage(w http.ResponseWriter, data interface{}, pd *PageDetails, code int) error {
 	jr := Response{
 		Data: data,
@@ -94,7 +106,7 @@ func WriteResponsePage(w http.ResponseWriter, data interface{}, pd *PageDetails,
 	return encodeResponse(w, jr, code)
 }
 
-// WriteResponse encodes the supplied data in a response, and writes to w.
+// WriteResponse writes a status code and JSON response containing data to w.
 func WriteResponse(w http.ResponseWriter, data interface{}, code int) error {
 	return WriteResponsePage(w, data, nil, code)
 }
