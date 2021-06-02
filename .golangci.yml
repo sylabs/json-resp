@@ -22,7 +22,6 @@ linters:
     - govet
     - ineffassign
     - interfacer
-    - maligned
     - misspell
     - nakedret
     - prealloc
