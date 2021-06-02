@@ -16,7 +16,6 @@ linters:
     - godox
     - gofmt
     - goimports
-    - golint
     - goprintffuncname
     - gosec
     - gosimple
@@ -27,6 +26,7 @@ linters:
     - misspell
     - nakedret
     - prealloc
+    - revive
     - rowserrcheck
     - staticcheck
     - structcheck
