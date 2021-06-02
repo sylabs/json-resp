@@ -16,17 +16,15 @@ linters:
     - godox
     - gofmt
     - goimports
-    - golint
     - goprintffuncname
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
     - misspell
     - nakedret
     - prealloc
+    - revive
     - rowserrcheck
     - staticcheck
     - structcheck
