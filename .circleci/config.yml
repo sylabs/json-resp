@@ -7,15 +7,18 @@ executors:
   node:
     docker:
       - image: node:16-slim
-  golang:
-    docker:
-      - image: golang:1.16
   golangci-lint:
     docker:
       - image: golangci/golangci-lint:v1.41-alpine
+  golang-previous:
+    docker:
+      - image: golang:1.15
+  golang-latest:
+    docker:
+      - image: golang:1.16
 
 jobs:
-  lint_markdown:
+  lint-markdown:
     executor: node
     steps:
       - checkout
@@ -26,8 +29,16 @@ jobs:
           name: Check for Lint
           command: markdownlint .
 
-  check_mod_tidy:
-    executor: golang
+  lint-source:
+    executor: golangci-lint
+    steps:
+      - checkout
+      - run:
+          name: Check for Lint
+          command: golangci-lint run
+
+  check-go-mod:
+    executor: golang-latest
     steps:
       - checkout
       - run:
@@ -37,28 +48,26 @@ jobs:
           name: Check Module Tidiness
           command: git diff --exit-code -- go.mod go.sum
 
-  build_source:
-    executor: golang
+  build-source:
+    parameters:
+      e:
+        type: executor
+    executor: << parameters.e >>
     steps:
       - checkout
       - run:
           name: Build Source
           command: go build ./...
 
-  lint_source:
-    executor: golangci-lint
+  unit-test:
+    parameters:
+      e:
+        type: executor
+    executor: << parameters.e >>
     steps:
       - checkout
       - run:
-          name: Check for Lint
-          command: golangci-lint run
-
-  unit_test:
-    executor: golang
-    steps:
-      - checkout
-      - run:
-          name: Run Tests
+          name: Run Unit Tests
           command: go test -coverprofile cover.out -race ./...
       - codecov/upload:
           file: cover.out
@@ -66,10 +75,16 @@ jobs:
 workflows:
   version: 2
 
-  build_and_test:
+  build-and-test:
     jobs:
-      - lint_markdown
-      - check_mod_tidy
-      - build_source
-      - lint_source
-      - unit_test
+      - lint-markdown
+      - lint-source
+      - check-go-mod
+      - build-source:
+          matrix:
+            parameters:
+              e: ["golang-previous", "golang-latest"]
+      - unit-test:
+          matrix:
+            parameters:
+              e: ["golang-previous", "golang-latest"]
