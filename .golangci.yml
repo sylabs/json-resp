@@ -14,7 +14,7 @@ linters:
     - gocritic
     - gocyclo
     - godox
-    - gofmt
+    - gofumpt
     - goimports
     - goprintffuncname
     - gosec
