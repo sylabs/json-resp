@@ -43,13 +43,11 @@ type PageDetails struct {
 	TotalSize int    `json:"totalSize,omitempty"`
 }
 
-var (
-	// JSONErrorUnauthorized is a generic 401 unauthorized response
-	JSONErrorUnauthorized = &Error{
-		Code:    http.StatusUnauthorized,
-		Message: "Unauthorized",
-	}
-)
+// JSONErrorUnauthorized is a generic 401 unauthorized response
+var JSONErrorUnauthorized = &Error{
+	Code:    http.StatusUnauthorized,
+	Message: "Unauthorized",
+}
 
 // Response is the top level container of all of our REST API responses.
 type Response struct {
@@ -67,7 +65,6 @@ func NewError(code int, message string) *Error {
 }
 
 func encodeResponse(w http.ResponseWriter, jr Response, code int) error {
-
 	// We _could_ encode the JSON directly to the response, but in so doing, the response code is
 	// written out the first time Write() is called under the hood. This makes it difficult to
 	// return an appropriate HTTP code when JSON encoding fails, so we use an intermediate buffer

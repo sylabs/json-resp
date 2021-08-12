@@ -36,7 +36,8 @@ func TestError(t *testing.T) {
 			code:          http.StatusNotFound,
 			message:       "blah",
 			wantErr:       &Error{Code: http.StatusNotFound, Message: "blah"},
-			wantErrString: "blah (404 Not Found)"},
+			wantErrString: "blah (404 Not Found)",
+		},
 	}
 
 	for _, tt := range tests {
