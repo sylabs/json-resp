@@ -3,8 +3,10 @@ linters:
   enable:
     - bidichk
     - bodyclose
+    - containedctx
     - contextcheck
     - deadcode
+    - decorder
     - depguard
     - dogsled
     - dupl
@@ -12,6 +14,8 @@ linters:
     - funlen
     - gochecknoinits
     - gocognit
+    - errchkjson
+    - gochecknoinits
     - goconst
     - gocritic
     - gocyclo
@@ -22,8 +26,10 @@ linters:
     - gosec
     - gosimple
     - govet
+    - grouper
     - ineffassign
     - ireturn
+    - maintidx
     - misspell
     - nakedret
     - nilnil
@@ -39,3 +45,4 @@ linters:
     - unparam
     - unused
     - varcheck
+    - whitespace
