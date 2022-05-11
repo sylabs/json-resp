@@ -2,7 +2,7 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/sylabs/json-resp)](https://pkg.go.dev/github.com/sylabs/json-resp)
 [![Build Status](https://circleci.com/gh/sylabs/json-resp.svg?style=shield)](https://circleci.com/gh/sylabs/workflows/json-resp)
-[![Code Coverage](https://codecov.io/gh/sylabs/json-resp/branch/master/graph/badge.svg)](https://codecov.io/gh/sylabs/json-resp)
+[![Code Coverage](https://codecov.io/gh/sylabs/json-resp/branch/main/graph/badge.svg)](https://codecov.io/gh/sylabs/json-resp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/sylabs/json-resp)](https://goreportcard.com/report/github.com/sylabs/json-resp)
 
 The `json-resp` package contains a small set of functions that are used to marshall and unmarshall response data and errors in JSON format.
