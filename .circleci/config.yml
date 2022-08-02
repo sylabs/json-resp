@@ -1,21 +1,21 @@
 version: 2.1
 
 orbs:
-  codecov: codecov/codecov@1.2
+  codecov: codecov/codecov@3
 
 executors:
   node:
     docker:
-      - image: node:16-slim
+      - image: node:17-slim
   golangci-lint:
     docker:
       - image: golangci/golangci-lint:v1.47
   golang-previous:
     docker:
-      - image: golang:1.16
+      - image: golang:1.17
   golang-latest:
     docker:
-      - image: golang:1.17
+      - image: golang:1.18
 
 jobs:
   lint-markdown:
