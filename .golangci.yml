@@ -5,17 +5,16 @@ linters:
     - bodyclose
     - containedctx
     - contextcheck
-    - deadcode
     - decorder
     - depguard
     - dogsled
     - dupl
     - errcheck
+    - errchkjson
     - funlen
     - gochecknoinits
-    - gocognit
-    - errchkjson
     - gochecknoinits
+    - gocognit
     - goconst
     - gocritic
     - gocyclo
@@ -28,21 +27,20 @@ linters:
     - govet
     - grouper
     - ineffassign
+    - interfacebloat
     - ireturn
     - maintidx
     - misspell
     - nakedret
     - nilnil
     - prealloc
+    - reassign
     - revive
-    - rowserrcheck
     - staticcheck
-    - structcheck
     - stylecheck
     - tenv
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
     - whitespace
