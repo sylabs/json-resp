@@ -42,7 +42,7 @@ func TestError(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			je := NewError(tt.code, tt.message)
+			je := &Error{Code: tt.code, Message: tt.message}
 			if je.Code != tt.code {
 				t.Errorf("got code %v, want %v", je.Code, tt.code)
 			}
