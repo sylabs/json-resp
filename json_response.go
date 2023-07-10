@@ -43,25 +43,11 @@ type PageDetails struct {
 	TotalSize int    `json:"totalSize,omitempty"`
 }
 
-// JSONErrorUnauthorized is a generic 401 unauthorized response
-var JSONErrorUnauthorized = &Error{
-	Code:    http.StatusUnauthorized,
-	Message: "Unauthorized",
-}
-
 // Response is the top level container of all of our REST API responses.
 type Response struct {
 	Data  interface{}  `json:"data,omitempty"`
 	Page  *PageDetails `json:"page,omitempty"`
 	Error *Error       `json:"error,omitempty"`
-}
-
-// NewError returns an error that contains the given code and message.
-func NewError(code int, message string) *Error {
-	return &Error{
-		Code:    code,
-		Message: message,
-	}
 }
 
 func encodeResponse(w http.ResponseWriter, jr Response, code int) error {
