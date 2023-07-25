@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, Sylabs Inc. All rights reserved.
+// Copyright (c) 2018-2023, Sylabs Inc. All rights reserved.
 // This software is licensed under a 3-clause BSD license. Please consult the LICENSE.md file
 // distributed with the sources of this project regarding your rights to use or distribute this
 // software.
@@ -57,13 +57,13 @@ func encodeResponse(w http.ResponseWriter, jr Response, code int) error {
 	// in order to preserve our ability to set the correct HTTP code.
 	b, err := json.Marshal(jr)
 	if err != nil {
-		return fmt.Errorf("jsonresp: failed to encode response: %v", err)
+		return fmt.Errorf("jsonresp: failed to encode response: %w", err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	if _, err := w.Write(b); err != nil {
-		return fmt.Errorf("jsonresp: failed to write response: %v", err)
+		return fmt.Errorf("jsonresp: failed to write response: %w", err)
 	}
 	return nil
 }
@@ -102,14 +102,14 @@ func ReadResponsePage(r io.Reader, v interface{}) (pd *PageDetails, err error) {
 		Error *Error          `json:"error"`
 	}
 	if err := json.NewDecoder(r).Decode(&u); err != nil {
-		return nil, fmt.Errorf("jsonresp: failed to read response: %v", err)
+		return nil, fmt.Errorf("jsonresp: failed to read response: %w", err)
 	}
 	if u.Error != nil {
 		return nil, u.Error
 	}
 	if v != nil {
 		if err := json.Unmarshal(u.Data, v); err != nil {
-			return nil, fmt.Errorf("jsonresp: failed to unmarshal response: %v", err)
+			return nil, fmt.Errorf("jsonresp: failed to unmarshal response: %w", err)
 		}
 	}
 	return u.Page, nil
